@@ -1,0 +1,72 @@
+[_]
+description = "mise example repository — showcases per-directory tool versioning, tasks, env vars, and redactions"
+
+experimental_monorepo_root = true
+
+[settings]
+experimental = true
+task_output = "interleave"
+
+[tools]
+uv = "0.10.10"
+jq = "latest"
+shellcheck = "latest"
+
+[env]
+PROJECT_NAME = "mise-example"
+LOG_LEVEL = "info"
+APP_SECRET = { value = "super-secret-value", redact = true }
+API_TOKEN = { value = "tok_1234567890", redact = true }
+
+[tasks.setup]
+description = "Install all tools across root and subdirectories"
+run = """
+mise install
+find "$MISE_PROJECT_ROOT" -mindepth 2 -name 'mise.toml' -printf '%h\n' | while read -r dir; do
+  echo "Installing tools in ${dir#$MISE_PROJECT_ROOT/}..."
+  cd "$dir" && mise install
+done
+"""
+
+[tasks.info]
+description = "Print current tool versions"
+run = "mise ls"
+
+[tasks.check]
+description = "Run shellcheck and version checks across the project"
+run = """
+echo "==> shellcheck version"
+shellcheck --version | head -2
+echo ""
+echo "==> Python subdirectories"
+find "$MISE_PROJECT_ROOT" -mindepth 2 -name 'mise.toml' -printf '%h\n' | sort | while read -r dir; do
+  name="${dir#$MISE_PROJECT_ROOT/}"
+  case "$name" in python-*)
+    echo -n "  $name: "
+    cd "$dir" && python --version 2>&1
+  esac
+done
+echo ""
+echo "==> Node subdirectories"
+find "$MISE_PROJECT_ROOT" -mindepth 2 -name 'mise.toml' -printf '%h\n' | sort | while read -r dir; do
+  name="${dir#$MISE_PROJECT_ROOT/}"
+  case "$name" in node-*)
+    echo -n "  $name: "
+    cd "$dir" && node --version 2>&1
+  esac
+done
+"""
+
+[tasks.fmt]
+description = "Format Python files with ruff (via uv)"
+run = "uv tool run ruff format ."
+
+[tasks.clean]
+description = "Clean caches"
+run = """
+echo "Cleaning __pycache__ directories..."
+find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+echo "Cleaning node_modules directories..."
+find . -type d -name node_modules -exec rm -rf {} + 2>/dev/null || true
+echo "Done."
+"""

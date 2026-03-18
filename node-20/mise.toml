@@ -1,0 +1,9 @@
+[tools]
+node = "20.19.1"
+
+[env]
+NODE_DIR = "node-20"
+
+[tasks.test]
+description = "Verify Node version"
+run = "node --version"

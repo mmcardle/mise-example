@@ -1,0 +1,9 @@
+[tools]
+node = "18.20.8"
+
+[env]
+NODE_DIR = "node-18"
+
+[tasks.test]
+description = "Verify Node version"
+run = "node --version"

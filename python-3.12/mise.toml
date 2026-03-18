@@ -1,0 +1,9 @@
+[tools]
+python = "3.12.13"
+
+[env]
+PYTHON_DIR = "python-3.12"
+
+[tasks.test]
+description = "Verify Python version"
+run = "python --version"
