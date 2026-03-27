@@ -22,9 +22,9 @@ API_TOKEN = { value = "tok_1234567890", redact = true }
 description = "Install all tools across root and subdirectories"
 run = """
 mise install
-find "$MISE_PROJECT_ROOT" -mindepth 2 -name 'mise.toml' -printf '%h\n' | while read -r dir; do
+find "$MISE_PROJECT_ROOT" -mindepth 2 -name 'mise.toml' | xargs -I{} dirname {} | while read -r dir; do
   echo "Installing tools in ${dir#$MISE_PROJECT_ROOT/}..."
-  cd "$dir" && mise install
+  cd "$dir" && mise trust && mise install
 done
 """
 
@@ -39,7 +39,7 @@ echo "==> shellcheck version"
 shellcheck --version | head -2
 echo ""
 echo "==> Python subdirectories"
-find "$MISE_PROJECT_ROOT" -mindepth 2 -name 'mise.toml' -printf '%h\n' | sort | while read -r dir; do
+find "$MISE_PROJECT_ROOT" -mindepth 2 -name 'mise.toml' | xargs -I{} dirname {} | sort | while read -r dir; do
   name="${dir#$MISE_PROJECT_ROOT/}"
   case "$name" in python-*)
     echo -n "  $name: "
@@ -48,7 +48,7 @@ find "$MISE_PROJECT_ROOT" -mindepth 2 -name 'mise.toml' -printf '%h\n' | sort | 
 done
 echo ""
 echo "==> Node subdirectories"
-find "$MISE_PROJECT_ROOT" -mindepth 2 -name 'mise.toml' -printf '%h\n' | sort | while read -r dir; do
+find "$MISE_PROJECT_ROOT" -mindepth 2 -name 'mise.toml' | xargs -I{} dirname {} | sort | while read -r dir; do
   name="${dir#$MISE_PROJECT_ROOT/}"
   case "$name" in node-*)
     echo -n "  $name: "
